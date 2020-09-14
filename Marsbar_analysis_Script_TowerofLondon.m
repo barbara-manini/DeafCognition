@@ -369,9 +369,10 @@ for n=1:size(subjs,1)
 end 
 
 %% STEP 8: Put the data togheter in a common matrix 
-% Working Memory  (stimulus onset)
+
 
 subjs={ '002';'003'; '004'; '006';'007';'008';'011'; '013';'014'; '015'; '017'; '018';'021';'023';'028';'031';'032';'041'; '042'; '101';'104';'107';'108'; '110';'111';'113'; '115'; '116'; '118';'119';'122'; '124';'127'; '129';'131';'132';'133';'134';'135';'136'}; 
+
 folder_ROI= '/Users/deafneuralplasticitylab/Documents/MATLAB/Data/ROI_freesurf/'; %replace this directory with the directory where your data will be stored
 
 data_file= {'TowerofLondon_L_HG_roi.mat'; 'TowerofLondon_R_HG_roi.mat'; 'TowerofLondon_L_PT_roi.mat'; 'TowerofLondon_R_PT_roi.mat'; 'TowerofLondon_L_STC_roi.mat'; 'TowerofLondon_R_STC_roi.mat' }
