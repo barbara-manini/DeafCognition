@@ -1,0 +1,334 @@
+%spm_get_defaults('cmdline',true);
+
+clear all;
+spm('Defaults','fMRI');
+spm_jobman('initcfg');
+
+
+mainfolder='/Users/b.manini/Documents/MATLAB/Data';
+
+taskfolders= {'simontask'};
+taskname={'_Simon'};
+%taskfolders={'simon';'Simon'};'103';'115';'132''015'
+
+subjs={'015'; '103'; '107';'115';'130';'132'} %These are letter strings (not numbers). Make sure they are all the same legnth(3 digits)
+%subjs=['002';'003'];
+% column 1 [stimulus presentation] = 0: right visual field 
+%-----------                         1: left visual field 
+%-----------                         2: center vision
+%column 2=  [trial condition]     =  0: congruent
+%----------                          1: incongruent
+%----------                          2: neutral
+% column 3 [answer side]          =  4: left
+%----------                          9: right
+for n=1:size(subjs,1)
+    data_path=strcat(mainfolder,'/sub-',subjs(n,:),'/funct/',taskfolders,'_run1');
+% %     data_path2=strcat(mainfolder,'/sub-',subjs(n,:),'/funct/',taskfolders,'_run2');
+    
+    regressor_Simon_name=strcat(data_path,'/sub-',subjs(n,:),taskname,'.csv');
+%     regressor_Simon_name2=strcat(data_path2,'/sub-',subjs(n,:),taskname,'.csv');
+    regressor_Simon=char(regressor_Simon_name);
+%     regressor_Simon2=char(regressor_Simon_name2);
+    
+    data=csvread(regressor_Simon);
+%     data2=csvread(regressor_Simon2);
+    
+    t0=data(1,9);
+%     t02=data2(1,9);
+ 
+   %% 
+   %Look for outliers in RT
+%    RT=data(:,7);
+%    outliers1=isoutlier(RT,'mean');
+%    RT2=data2(:,7);
+%    outliers2=isoutlier(RT2,'mean');
+    
+   %%right visual field
+    rvlhi=find(data(:,1)==0 & data(:,5)==4 & data(:,6)==1);
+    rvrhc=find(data(:,1)==0 & data(:,5)==9 & data(:,6)==1);
+%     rvlhi2=find(data2(:,1)==0 & data2(:,5)==4 & data2(:,6)==1);
+%     rvrhc2=find(data2(:,1)==0 & data2(:,5)==9 & data2(:,6)==1);
+
+    %left visual field
+    lvrhi=find(data(:,1)==1 & data(:,5)==9 & data(:,6)==1);
+    lvlhc=find(data(:,1)==1 & data(:,5)==4 & data(:,6)==1);
+%     lvrhi2=find(data2(:,1)==1 & data2(:,5)==9 & data2(:,6)==1);
+%     lvlhc2=find(data2(:,1)==1 & data2(:,5)==4 & data2(:,6)==1);
+% % 
+% % % %     %% wrong responses with RH
+%     rh_w=find(data(:,5)==9 & data(:,6)==0);
+%     rh_w2=find(data2(:,5)==9 & data2(:,6)==0);
+% % % %     %%  wrong responses with LH
+%     lh_w=find(data(:,5)==4 & data(:,6)==0);
+%     lh_w2=find(data2(:,5)==4 & data2(:,6)==0);
+    
+    onset_rvlhi_vis=data(rvlhi,4)-t0;%left hand incongruent
+    onset_rvlhi=onset_rvlhi_vis + data(rvlhi,7);
+    onset_rvrhc_vis=data(rvrhc,4)-t0;%right hand congruent
+    onset_rvrhc=onset_rvrhc_vis + data(rvrhc,7);
+    onset_lvrhi_vis=data(lvrhi,4)-t0;%right incongruent
+    onset_lvrhi=onset_lvrhi_vis + data(lvrhi,7);
+    onset_lvlhc_vis=data(lvlhc,4)-t0;%left congruent
+    onset_lvlhc=onset_lvlhc_vis + data(lvlhc,7);
+    
+    
+%     onset_rvlhi_vis2=data2(rvlhi2,4)-t02;%left hand incongruent
+%     onset_rvlhi2=onset_rvlhi_vis2 + data2(rvlhi2,7);
+%     onset_rvrhc_vis2=data2(rvrhc2,4)-t02;%right hand congruent
+%     onset_rvrhc2=onset_rvrhc_vis2 + data2(rvrhc2,7);
+%     onset_lvrhi_vis2=data2(lvrhi2,4)-t02;%right incongruent
+%     onset_lvrhi2=onset_lvrhi_vis2 + data2(lvrhi2,7);
+%     onset_lvlhc_vis2=data2(lvlhc2,4)-t02;%left congruent
+%     onset_lvlhc2=onset_lvlhc_vis2 + data2(lvlhc2,7);
+%     
+%      onset_rh_w=data(rh_w,4)-t0;
+%      onset_rh_w2=data2(rh_w2,4)-t02;
+%      
+%      onset_lh_w=data(lh_w,4)-t0;
+%      onset_lh_w2=data2(lh_w2,4)-t02;
+
+% 
+     funct= spm_select ('FPList', data_path, '^sw.*\.nii$') ;
+     motionfile=spm_select ('FPList', data_path, '^r.*\.txt$');
+%      funct2= spm_select ('FPList', data_path2, '^sw.*\.nii$') ;
+%      motionfile2=spm_select ('FPList', data_path2, '^r.*\.txt$');
+     %dir=strcat(mainfolder,'/Lev1st_Simon_test_run2/s',subjs(n,:));
+     dir=strcat(mainfolder,'/Lev1st_Simon_Oct2020/s',subjs(n,:));
+     dir1=cell2mat(dir);  
+     directory=mkdir(dir1);
+%    
+     d=1;
+     
+     
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).scans = cellstr(funct);
+     matlabbatch{1}.spm.stats.fmri_spec.dir = dir;
+     matlabbatch{1}.spm.stats.fmri_spec.timing.units = 'secs';
+     matlabbatch{1}.spm.stats.fmri_spec.timing.RT = 3;
+     matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t = 50;
+     matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t0 = 25;
+%    
+     c=1;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).name = 'RVLHI';
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).onset = onset_rvlhi;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).duration = 0;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).tmod = 0;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).orth = 1;
+%     
+     c=c+1;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).name = 'LVRHI';
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).onset = onset_lvrhi;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).duration = 0;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).tmod = 0;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).orth = 1;
+%     
+     c=c+1;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).name = 'LVLHC';
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).onset = onset_lvlhc;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).duration = 0;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).tmod = 0;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).orth = 1;
+%     
+     c=c+1;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).name = 'RVRHC';
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).onset = onset_rvrhc;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).duration = 0;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).tmod = 0;
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).orth = 1;
+ 
+    
+%     if length(lh_w)>3 
+%         c=c+1;
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).name = 'lh_w';
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).onset = onset_lh_w;
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).duration = 0;
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).tmod = 0;
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).orth = 1;
+%     end
+%     
+%     if length(rh_w)>3
+%         c=c+1;
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).name = 'rh_w';
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).onset = onset_rh_w;
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).duration = 0;
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).tmod = 0;
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+%         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).orth = 1;
+%     end
+
+    matlabbatch{1}.spm.stats.fmri_spec.sess(1).multi = {''};
+    matlabbatch{1}.spm.stats.fmri_spec.sess(1).regress = struct('name', {}, 'val', {});
+    matlabbatch{1}.spm.stats.fmri_spec.sess(1).multi_reg = {motionfile};
+    matlabbatch{1}.spm.stats.fmri_spec.sess(1).hpf = 128;
+    matlabbatch{1}.spm.stats.fmri_spec.fact = struct('name', {}, 'levels', {});
+    matlabbatch{1}.spm.stats.fmri_spec.bases.hrf.derivs = [0 0];
+    matlabbatch{1}.spm.stats.fmri_spec.volt = 1;
+    matlabbatch{1}.spm.stats.fmri_spec.global = 'None';
+    matlabbatch{1}.spm.stats.fmri_spec.mthresh = 0.8;
+    matlabbatch{1}.spm.stats.fmri_spec.mask = {''};
+    matlabbatch{1}.spm.stats.fmri_spec.cvi = 'AR(1)';
+         
+%      d=d+1;
+% %     
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).scans = cellstr(funct2);
+%     matlabbatch{1}.spm.stats.fmri_spec.timing.units = 'secs';
+%     matlabbatch{1}.spm.stats.fmri_spec.timing.RT = 3;
+%     matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t = 50;
+%     matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t0 = 25;
+%     c=1;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).name = 'RVLHI';
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).onset = onset_rvlhi2;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).duration = 0;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).tmod = 0;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).orth = 1;
+%     
+%     c=c+1;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).name = 'LVRHI';
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).onset = onset_lvrhi2;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).duration = 0;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).tmod = 0;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).orth = 1;
+%     
+%     c=c+1;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).name = 'LVLHC';
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).onset = onset_lvlhc2;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).duration = 0;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).tmod = 0;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).orth = 1;
+%     
+%     c=c+1;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).name = 'RVRHC';
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).onset = onset_rvrhc2;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).duration = 0;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).tmod = 0;
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).cond(c).orth = 1;
+%  
+% %     
+% % %     if length(lh_w)>3 
+% % %         c=c+1;
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).name = 'lh_w';
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).onset = onset_lh_w;
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).duration = 0;
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).tmod = 0;
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).orth = 1;
+% % %     end
+% % %     
+% % %     if length(rh_w)>3
+% % %         c=c+1;
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).name = 'rh_w';
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).onset = onset_rh_w;
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).duration = 0;
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).tmod = 0;
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).pmod = struct('name', {}, 'param', {}, 'poly', {});
+% % %         matlabbatch{1}.spm.stats.fmri_spec.sess.cond(c).orth = 1;
+% % %     end
+% % %     
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).multi = {''};
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).regress = struct('name', {}, 'val', {});
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).multi_reg = {motionfile2};
+%     matlabbatch{1}.spm.stats.fmri_spec.sess(d).hpf = 128;
+%     matlabbatch{1}.spm.stats.fmri_spec.fact = struct('name', {}, 'levels', {});
+%     matlabbatch{1}.spm.stats.fmri_spec.bases.hrf.derivs = [0 0];
+%     matlabbatch{1}.spm.stats.fmri_spec.volt = 1;
+%     matlabbatch{1}.spm.stats.fmri_spec.global = 'None';
+%     matlabbatch{1}.spm.stats.fmri_spec.mthresh = 0.8;
+%     matlabbatch{1}.spm.stats.fmri_spec.mask = {''};
+%     matlabbatch{1}.spm.stats.fmri_spec.cvi = 'AR(1)';
+% % 
+%     
+% % %     
+% % %     %-----estimate
+% % 
+% %    
+     SPMfile=strcat(mainfolder,'/Lev1st_Simon_Oct2020/s',subjs(n,:), '/SPM.mat');
+     matlabbatch{2}.spm.stats.fmri_est.spmmat(1) = cellstr(SPMfile);
+     matlabbatch{2}.spm.stats.fmri_est.write_residuals = 0;
+     matlabbatch{2}.spm.stats.fmri_est.method.Classical = 1;
+%         
+% 
+% %     % ----Incongruent vs Congruent
+    matlabbatch{3}.spm.stats.con.spmmat = cellstr(SPMfile);
+    matlabbatch{3}.spm.stats.con.consess{1}.tcon.name = 'Incongruent > Congruent';
+    matlabbatch{3}.spm.stats.con.consess{1}.tcon.weights = [1 1 -1 -1 0 0 0 0 0 0];
+    matlabbatch{3}.spm.stats.con.consess{1}.tcon.sessrep = 'repl';
+        %------Congruent > incongruent
+    matlabbatch{3}.spm.stats.con.consess{2}.tcon.name = 'Congruent > Incongruent';
+    matlabbatch{3}.spm.stats.con.consess{2}.tcon.weights = [ -1 -1 1 1 0 0 0 0 0 0];
+    matlabbatch{3}.spm.stats.con.consess{2}.tcon.sessrep = 'repl';
+%     %------ Left Vision > Right Vision
+    matlabbatch{3}.spm.stats.con.consess{3}.tcon.name = 'Left Visual field > Right Visual field ';
+    matlabbatch{3}.spm.stats.con.consess{3}.tcon.weights = [-1 1 1 -1 0 0 0 0 0 0 ];
+    matlabbatch{3}.spm.stats.con.consess{3}.tcon.sessrep = 'repl';
+%     %------Right Vision > Left Vision
+    matlabbatch{3}.spm.stats.con.consess{4}.tcon.name = 'Right Visual field > Left Visual field';
+    matlabbatch{3}.spm.stats.con.consess{4}.tcon.weights = [1 -1 -1 1 0 0 0 0 0 0 ];
+    matlabbatch{3}.spm.stats.con.consess{4}.tcon.sessrep = 'repl';
+    %-------'Left Hand > Right Hand';
+    matlabbatch{3}.spm.stats.con.consess{5}.tcon.name = 'Left Hand > Right Hand';
+    matlabbatch{3}.spm.stats.con.consess{5}.tcon.weights = [1 -1 1 -1 0 0 0 0 0 0 ];
+    matlabbatch{3}.spm.stats.con.consess{5}.tcon.sessrep = 'repl';
+    %-------Right Hand vs Left Hand
+    matlabbatch{3}.spm.stats.con.consess{6}.tcon.name = 'Right Hand vs Left Hand';
+    matlabbatch{3}.spm.stats.con.consess{6}.tcon.weights = [-1 1 -1 1 0 0 0 0 0 0 ];
+    matlabbatch{3}.spm.stats.con.consess{6}.tcon.sessrep = 'repl';
+    %------Incongruent
+    matlabbatch{3}.spm.stats.con.consess{7}.tcon.name = 'Incongruent';
+    matlabbatch{3}.spm.stats.con.consess{7}.tcon.weights = [1 1 0 0 0 0 0 0 0 0 ];
+    matlabbatch{3}.spm.stats.con.consess{7}.tcon.sessrep = 'repl'; 
+    %------Congruent
+    matlabbatch{3}.spm.stats.con.consess{8}.tcon.name = 'Congruent';
+    matlabbatch{3}.spm.stats.con.consess{8}.tcon.weights = [0 0 1 1 0 0 0 0 0 0 ];
+    matlabbatch{3}.spm.stats.con.consess{8}.tcon.sessrep = 'repl'; 
+    %------Left Vision
+    matlabbatch{3}.spm.stats.con.consess{9}.tcon.name = 'Left Visual field';
+    matlabbatch{3}.spm.stats.con.consess{9}.tcon.weights = [0 1 1 0 0 0 0 0 0 0 ];
+    matlabbatch{3}.spm.stats.con.consess{9}.tcon.sessrep = 'repl'; 
+    %------Right Vision 
+    matlabbatch{3}.spm.stats.con.consess{10}.tcon.name = 'Right Visual field';
+    matlabbatch{3}.spm.stats.con.consess{10}.tcon.weights = [1 0 0 1 0 0 0 0 0 0 ];
+    matlabbatch{3}.spm.stats.con.consess{10}.tcon.sessrep = 'repl'; 
+    %------Left hand
+    matlabbatch{3}.spm.stats.con.consess{11}.tcon.name = 'Left hand';
+    matlabbatch{3}.spm.stats.con.consess{11}.tcon.weights = [1 0 1 0 0 0 0 0 0 0 ];
+    matlabbatch{3}.spm.stats.con.consess{11}.tcon.sessrep = 'repl'; 
+    %------Right Hand
+    matlabbatch{3}.spm.stats.con.consess{12}.tcon.name = 'Right hand';
+    matlabbatch{3}.spm.stats.con.consess{12}.tcon.weights = [0 1 0 1 0 0 0 0 0 0 ];
+%     matlabbatch{3}.spm.stats.con.consess{12}.tcon.sessrep = 'repl'; 
+    %------RVLHI
+    matlabbatch{3}.spm.stats.con.consess{13}.tcon.name = 'RVLHI';
+    matlabbatch{3}.spm.stats.con.consess{13}.tcon.weights = [1 0 0 0 0 0 0 0 0 0 ];
+        %------LVRHI
+    matlabbatch{3}.spm.stats.con.consess{14}.tcon.name = 'LVRHI';
+    matlabbatch{3}.spm.stats.con.consess{14}.tcon.weights = [0 1 0 0 0 0 0 0 0 0 ];
+        %------LVLHC
+    matlabbatch{3}.spm.stats.con.consess{15}.tcon.name = 'LVLHC';
+    matlabbatch{3}.spm.stats.con.consess{15}.tcon.weights = [0 0 1 0 0 0 0 0 0 0 ];
+        %------RVRHC
+    matlabbatch{3}.spm.stats.con.consess{16}.tcon.name = 'RVRHC';
+    matlabbatch{3}.spm.stats.con.consess{16}.tcon.weights = [0 0 0 1 0 0 0 0 0 0 ];
+
+
+%     
+    disp(strcat('Running Simon Task first level analysis participant... ',subjs(n,:)))
+     spm_jobman('run',matlabbatch);
+ 
+    disp(strcat('Done Simon Task first level analysis participant... ',subjs(n,:)))
+    disp('')
+    
+     clear data* reg* t0 cv* rv* lv* c onset* *_w SPMfile motionfile
+     clear matlabbatch funct
+    
+end
+
+
+disp('The end')
