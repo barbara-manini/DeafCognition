@@ -14,12 +14,12 @@ marsbar_dir='/Users/deafneuralplasticitylab/Documents/MATLAB/spm12/toolbox/marsb
 mainfolder_Data='/Users/deafneuralplasticitylab/Documents/MATLAB/1-First Level analysis/Lev1st_WM_buttonpressbyhand/';
 
 %Replace with the directory where your ROIs are kept (the script will automatically loop into each participant folder)
-mainfolder_ROI='/Users/deafneuralplasticitylab/Documents/MATLAB/Data/ROI_freesurf/'; 
+mainfolder_ROI='/Users/deafneuralplasticitylab/Desktop/Temporal_ROIs/'; 
 
 % Start marsbar to make sure spm_get works
 marsbar('on')
 subjs={ '002';'004'; '006';'007';'008';'011'; '013';'014'; '015'; '016'; '017'; '018';'021';'023';'028';'031';'032';'041'; '042'; '101';'103';'104';'106'; '107';'108'; '110';'111'; '114'; '115'; '116'; '118';'119';'122'; '124';'127'; '129'; '130';'131';'132';'133';'134';'135'; '136'}; 
-
+%subjs={'103'};
 % MarsBaR version check
 if isempty(which('marsbar'))
   error('Need MarsBaR on the path');
@@ -49,7 +49,7 @@ for n=1:size(subjs,1)
     mars_sdir = 'Mars_ana';
       
     % select the Left Heschl's gyrus ROI from the subj folder
-    r = dir(fullfile(roi_dir,'L_HerschlGyrus_1_roi.mat'));
+    r = dir(fullfile(roi_dir,'L_HeschlGyrus_1_roi.mat'));
     L_HG_name = [r.name];
     roinames  = strcat(roi_dir,'/' ,L_HG_name);
     
@@ -102,7 +102,7 @@ for n=1:size(subjs,1)
     mars_sdir = 'Mars_ana';
       
     % select the STC ROI
-    r = dir(fullfile(roi_dir,'R_HerschlGyrus_1_roi.mat'));
+    r = dir(fullfile(roi_dir,'R_HeschlGyrus_1_roi.mat'));
     R_HG_name = [r.name];
     roinames  = strcat(roi_dir,'/' ,R_HG_name);
     
@@ -156,7 +156,7 @@ for n=1:size(subjs,1)
     mars_sdir = 'Mars_ana';
       
     % select the Left Heschl's gyrus ROI from the subj folder
-    r = dir(fullfile(roi_dir,'PTwithoutSTC_roi.mat')); %Left PT from where the voxel overlapping with pSTC were removed
+    r = dir(fullfile(roi_dir,'L_PTwithoutSTC_roi.mat')); %Left PT from where the voxel overlapping with pSTC were removed
     L_PT_name = [r.name];
     roinames  = strcat(roi_dir,'/' ,L_PT_name);
     
